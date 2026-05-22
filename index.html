@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>KRONOS — Tu vida, bajo control.</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080808;
+  --s1:#111111;
+  --s2:#181818;
+  --s3:#222222;
+  --b1:#2a2a2a;
+  --b2:#333333;
+  --acc:#e63946;
+  --acc2:#ff6b6b;
+  --gold:#f4a261;
+  --mint:#2ec4b6;
+  --purple:#7b2d8b;
+  --white:#f0f0f0;
+  --g1:#888888;
+  --g2:#555555;
+  --g3:#333333;
+}
+body{background:var(--bg);color:var(--white);font-family:'Inter',-apple-system,sans-serif;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:var(--b1);border-radius:2px;}
+input::placeholder,textarea::placeholder{color:var(--g2);}
+input[type=time]::-webkit-calendar-picker-indicator,
+input[type=date]::-webkit-calendar-picker-indicator,
+input[type=datetime-local]::-webkit-calendar-picker-indicator{filter:invert(0.4);}
+select{-webkit-appearance:none;appearance:none;}
+button{font-family:'Inter',sans-serif;}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideRight{from{width:0}to{width:var(--w)}}
+@keyframes letterDrop{from{opacity:0;transform:translateY(-40px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes glowLine{from{width:0;opacity:0}to{width:100px;opacity:1}}
+@keyframes tagFade{from{opacity:0;letter-spacing:.5em}to{opacity:1;letter-spacing:.25em}}
+@keyframes splashOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.04);pointer-events:none}}
+@keyframes streak{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes ping{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.2);opacity:0}}
+
+.fade{animation:fadeUp .22s ease both;}
+.fade2{animation:fadeUp .3s ease .08s both;}
+
+/* ── Layout ── */
+.app{display:flex;min-height:100vh;}
+.sidebar{width:64px;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;align-items:center;padding:20px 0;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:width .25s ease;}
+.sidebar.expanded{width:220px;}
+.sidebar-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--acc);margin-bottom:32px;cursor:pointer;transition:all .2s;white-space:nowrap;overflow:hidden;}
+.nav-item{width:100%;display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;transition:all .18s;border-left:3px solid transparent;color:var(--g1);font-size:13px;white-space:nowrap;overflow:hidden;}
+.nav-item:hover{color:var(--white);background:var(--s2);}
+.nav-item.active{color:var(--white);border-left-color:var(--acc);background:var(--s2);}
+.nav-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;}
+.nav-label{font-size:12px;font-weight:500;letter-spacing:.02em;opacity:0;transition:opacity .2s;}
+.sidebar.expanded .nav-label{opacity:1;}
+.sidebar-bottom{margin-top:auto;width:100%;}
+
+.main{margin-left:64px;min-height:100vh;transition:margin-left .25s ease;}
+.main.shifted{margin-left:220px;}
+
+/* Top bar */
+.topbar{padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);position:sticky;top:0;background:rgba(8,8,8,.92);backdrop-filter:blur(12px);z-index:100;}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.time-badge{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:6px 14px;text-align:center;}
+.time-badge .t{font-size:15px;font-weight:600;}
+.time-badge .d{font-size:10px;color:var(--g1);}
+.xp-badge{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1a0a00,#2d1500);border:1px solid #4a2800;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--gold);}
+.notif-btn{width:34px;height:34px;border-radius:10px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;position:relative;transition:all .15s;}
+.notif-btn:hover{background:var(--s3);}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--acc);border-radius:50%;border:1.5px solid var(--bg);}
+.lang-sel{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:5px 10px;color:var(--white);font-size:11px;cursor:pointer;outline:none;}
+.user-chip{display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:6px 10px;}
+.avatar{width:26px;height:26px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.user-name{font-size:12px;font-weight:500;}
+
+/* Content */
+.content{padding:28px;max-width:1100px;}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:20px;}
+.card-sm{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;}
+.card-hover{transition:all .2s;}
+.card-hover:hover{border-color:var(--b2);transform:translateY(-1px);}
+
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.kpi{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:18px;position:relative;overflow:hidden;cursor:default;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-color,var(--acc));}
+.kpi-label{font-size:10px;color:var(--g1);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;}
+.kpi-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:var(--g1);}
+
+/* Section title */
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--g1);font-weight:600;margin-bottom:14px;}
+
+/* Progress bar */
+.pbar-track{height:4px;background:var(--b1);border-radius:2px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:2px;transition:width .4s ease;}
+
+/* Habit grid */
+.habit-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.hday{width:100%;aspect-ratio:1;border-radius:4px;background:var(--b1);}
+.hday.done{background:var(--acc);}
+.hday.today{outline:2px solid var(--white);outline-offset:1px;}
+
+/* Streak flame */
+.streak{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;}
+.streak-num{color:var(--gold);}
+
+/* XP bar */
+.xp-track{height:6px;background:var(--b1);border-radius:3px;overflow:hidden;margin-top:6px;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),#e67e22);border-radius:3px;transition:width .5s ease;}
+
+/* Rank badge */
+.rank{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+
+/* Focus */
+.focus-timer{font-family:'Syne',sans-serif;font-size:96px;font-weight:800;letter-spacing:-4px;line-height:1;text-align:center;transition:color .3s;}
+.focus-ring{width:220px;height:220px;position:relative;margin:0 auto 28px;}
+.focus-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.focus-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* Tags/badges */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+
+/* Toggle */
+.toggle{width:36px;height:20px;background:var(--b1);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--acc);}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:7px;top:3px;left:3px;transition:left .2s;}
+.toggle.on::after{left:19px;}
+
+/* Inputs */
+.inp{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:10px 14px;color:var(--white);font-size:13px;outline:none;font-family:'Inter',sans-serif;transition:border-color .15s;}
+.inp:focus{border-color:var(--b2);}
+.btn{border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;letter-spacing:.02em;}
+.btn-primary{background:var(--acc);color:#fff;}
+.btn-primary:hover{background:var(--acc2);}
+.btn-ghost{background:transparent;color:var(--g1);border:1px solid var(--b1);}
+.btn-ghost:hover{color:var(--white);border-color:var(--b2);}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* Project board */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.board-col{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:16px;min-height:300px;}
+.board-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.board-dot{width:8px;height:8px;border-radius:50%;}
+.board-card{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .18s;}
+.board-card:hover{border-color:var(--b2);transform:translateY(-1px);}
+
+/* Achievements */
+.achievement{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;margin-bottom:8px;}
+.ach-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ach-locked{filter:grayscale(1);opacity:.4;}
+
+/* Notification toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 18px;min-width:280px;max-width:360px;display:flex;align-items:flex-start;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.6);animation:fadeUp .2s ease;}
+.toast-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.toast-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.toast-body{font-size:12px;color:var(--g1);line-height:1.5;}
+.toast-close{margin-left:auto;background:none;border:none;color:var(--g2);cursor:pointer;font-size:16px;flex-shrink:0;}
+
+/* Splash */
+.splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.splash-letters{display:flex;gap:2px;margin-bottom:20px;}
+.splash-letter{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;opacity:0;color:var(--white);}
+.splash-red{color:var(--acc);}
+.splash-line{height:2px;background:var(--acc);border-radius:1px;margin-bottom:16px;opacity:0;}
+.splash-tag{font-size:11px;color:var(--g1);letter-spacing:.3em;text-transform:uppercase;opacity:0;}
+
+/* Auth */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);}
+.auth-card{width:100%;max-width:380px;}
+.auth-logo{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--white);margin-bottom:4px;}
+.auth-logo span{color:var(--acc);}
+.auth-tab{flex:1;background:none;border:none;padding:11px 0;font-size:13px;color:var(--g1);cursor:pointer;letter-spacing:.03em;border-bottom:2px solid transparent;transition:all .15s;font-family:'Inter',sans-serif;}
+.auth-tab.active{color:var(--white);border-bottom-color:var(--acc);}
+.input-label{font-size:11px;color:var(--g1);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{width:0;overflow:hidden;}
+  .sidebar.expanded{width:220px;}
+  .main{margin-left:0;}
+  .main.shifted{margin-left:220px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .board{grid-template-columns:1fr;}
+  .content{padding:16px;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+
+/* ── Storage ── */
+const S={
+  get:(k,fb)=>{try{const v=localStorage.getItem('kro_'+k);return v!=null?JSON.parse(v):fb;}catch{return fb;}},
+  set:(k,v)=>{try{localStorage.setItem('kro_'+k,JSON.stringify(v));}catch{}},
+};
+
+/* ── Translations ── */
+const T={
+  es:{appSub:"Tu vida, bajo control.",login:"Iniciar sesión",reg:"Registrarse",name:"Nombre",email:"Correo",pass:"Contraseña",enter:"Entrar →",create:"Crear cuenta →",
+    nav:{dash:"Dashboard",tareas:"Tareas",habitos:"Hábitos",metas:"Objetivos",proyectos:"Proyectos",enfoque:"Enfoque",analisis:"Análisis",pend:"Pendientes",recs:"Recordatorios",logros:"Logros"},
+    dash:"Dashboard",tasks:"Tareas",habits:"Hábitos",goals:"Objetivos",focus:"Enfoque",pending:"Pendientes",reminders:"Recordatorios",projects:"Proyectos",achievements:"Logros",analysis:"Análisis",
+    today:"Hoy",streak:"Racha",xp:"XP",energy:"Energía",save:"Guardar",cancel:"Cancelar",add:"Agregar",delete:"Eliminar",
+    focusActive:"Sesión activa",focusWait:"Listo para iniciar",focusBreak:"Tiempo de descanso",
+    startFocus:"Iniciar",pauseFocus:"Pausar",resetFocus:"Reiniciar",
+    rank0:"Principiante",rank1:"Aprendiz",rank2:"Practicante",rank3:"Experto",rank4:"Maestro",rank5:"Leyenda",
+    logout:"Cerrar sesión",lang:"Idioma",notifOn:"Notificaciones activadas",notifOff:"Activa notificaciones",
+    good:"¡Excelente trabajo, sigue así! 💪",
+  },
+  en:{appSub:"Your life, under control.",login:"Sign in",reg:"Sign up",name:"Name",email:"Email",pass:"Password",enter:"Enter →",create:"Create account →",
+    nav:{dash:"Dashboard",tareas:"Tasks",habitos:"Habits",metas:"Goals",proyectos:"Projects",enfoque:"Focus",analisis:"Analysis",pend:"Pending",recs:"Reminders",logros:"Achievements"},
+    dash:"Dashboard",tasks:"Tasks",habits:"Habits",goals:"Goals",focus:"Focus",pending:"Pending",reminders:"Reminders",projects:"Projects",achievements:"Achievements",analysis:"Analysis",
+    today:"Today",streak:"Streak",xp:"XP",energy:"Energy",save:"Save",cancel:"Cancel",add:"Add",delete:"Delete",
+    focusActive:"Session active",focusWait:"Ready to start",focusBreak:"Break time",
+    startFocus:"Start",pauseFocus:"Pause",resetFocus:"Reset",
+    rank0:"Beginner",rank1:"Learner",rank2:"Practitioner",rank3:"Expert",rank4:"Master",rank5:"Legend",
+    logout:"Sign out",lang:"Language",notifOn:"Notifications active",notifOff:"Enable notifications",
+    good:"Excellent work, keep it up! 💪",
+  },
+};
+const getLang=()=>S.get('lang','es');
+
+/* ── Toast system ── */
+let toastId=0;
+function showToast(title,body,icon='✨',duration=3500){
+  const id=++toastId;
+  const c=document.getElementById('toastContainer');
+  const el=document.createElement('div');
+  el.className='toast';el.id='toast_'+id;
+  el.innerHTML=`<div class="toast-icon">${icon}</div><div style="flex:1"><div class="toast-title">${title}</div><div class="toast-body">${body}</div></div><button class="toast-close" onclick="this.closest('.toast').remove()">×</button>`;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(),duration);
+}
+function sendNotif(title,body){
+  if(Notification.permission==='granted'){
+    new Notification('KRONOS · '+title,{body,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="%23e63946"/><text x="16" y="22" text-anchor="middle" font-size="18" fill="white">K</text></svg>'});
+  }
+  showToast(title,body,'🔔');
+}
+
+/* ── Audio engine ── */
+let audioCtx=null;
+let activeNodes=[];
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function stopAllAudio(){activeNodes.forEach(n=>{try{n.stop();}catch{}});activeNodes=[];}
+
+function playAmbient(type){
+  stopAllAudio();
+  if(type===null)return;
+  const ctx=getAudio();
+  if(ctx.state==='suspended')ctx.resume();
+
+  if(type==='rain'){
+    // Pink noise rain
+    const bufSize=ctx.sampleRate*4;
+    const buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0;
+    for(let i=0;i<bufSize;i++){
+      const w=Math.random()*2-1;
+      b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;
+      b2=.96900*b2+w*.1538520;b3=.86650*b3+w*.3104856;
+      b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+      d[i]=(b0+b1+b2+b3+b4+b5+w*.5362)*0.11;
+    }
+    const src=ctx.createBufferSource();src.buffer=buf;src.loop=true;
+    const g=ctx.createGain();g.gain.value=.6;
+    // Low pass for rain feel
+    const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=2000;
+    src.connect(f);f.connect(g);g.connect(ctx.destination);
+    src.start();activeNodes.push(src);
+  }
+  else if(type==='ocean'){
+    // Ocean waves - modulated noise
+    const ctx2=getAudio();
+    const buf=ctx2.createBuffer(1,ctx2.sampleRate*8,ctx2.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++){
+      const wave=Math.sin(i/ctx2.sampleRate*0.15)*0.5+0.5;
+      d[i]=(Math.random()*2-1)*wave*0.3;
+    }
+    const src=ctx2.createBufferSource();src.buffer=buf;src.loop=true;
+    const g=ctx2.createGain();g.gain.value=.7;
+    const f=ctx2.createBiquadFilter();f.type='lowpass';f.frequency.value=800;
+    src.connect(f);f.connect(g);g.connect(ctx2.destination);
+    src.start();activeNodes.push(src);
+  }
+  else if(type==='forest'){
+    // High freq nature sounds
+    for(let i=0;i<3;i++){
+      setTimeout(()=>{
+        const ctx3=getAudio();
+        const osc=ctx3.createOscillator();
+        const g=ctx3.createGain();
+        osc.frequency.value=2000+Math.random()*3000;
+        osc.type='sine';
+        g.gain.setValueAtTime(0,ctx3.currentTime);
+        g.gain.linearRampToValueAtTime(0.04,ctx3.currentTime+0.1);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx3.currentTime+1.5);
+        osc.connect(g);g.connect(ctx3.destination);
+        osc.start();osc.stop(ctx3.currentTime+1.5);
+      },i*800+Math.random()*2000);
+    }
+    // Background noise
+    const buf=getAudio().createBuffer(1,getAudio().sampleRate*4,getAudio().sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.03;
+    const src=getAudio().createBufferSource();src.buffer=buf;src.loop=true;
+    const f=getAudio().createBiquadFilter();f.type='bandpass';f.frequency.value=4000;
+    const g=getAudio().createGain();g.gain.value=.15;
+    src.connect(f);f.connect(g);g.connect(getAudio().destination);
+    src.start();activeNodes.push(src);
+  }
+  else if(type==='cafe'){
+    // Café - low murmur
+    const buf=getAudio().createBuffer(1,getAudio().sampleRate*4,getAudio().sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
+    const src=getAudio().createBufferSource();src.buffer=buf;src.loop=true;
+    const f=getAudio().createBiquadFilter();f.type='bandpass';f.frequency.value=400;f.Q.value=0.5;
+    const g=getAudio().createGain();g.gain.value=.25;
+    src.connect(f);f.connect(g);g.connect(getAudio().destination);
+    src.start();activeNodes.push(src);
+  }
+  else if(type==='fire'){
+    // Fire crackling
+    const buf=getAudio().createBuffer(1,getAudio().sampleRate*3,getAudio().sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.random()*0.4;
+    const src=getAudio().createBufferSource();src.buffer=buf;src.loop=true;
+    const f=getAudio().createBiquadFilter();f.type='lowpass';f.frequency.value=1200;
+    const g=getAudio().createGain();g.gain.value=.5;
+    src.connect(f);f.connect(g);g.connect(getAudio().destination);
+    src.start();activeNodes.push(src);
+  }
+}
+
+function playAlarm(){
+  const ctx=getAudio();
+  if(ctx.state==='suspended')ctx.resume();
+  const freqs=[523,659,784,1047];
+  freqs.forEach((f,i)=>{
+    const osc=ctx.createOscillator();
+    const g=ctx.createGain();
+    const t=ctx.currentTime+i*0.18;
+    osc.frequency.value=f;osc.type='sine';
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.3,t+0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+    osc.connect(g);g.connect(ctx.destination);
+    osc.start(t);osc.stop(t+0.4);
+  });
+}
+
+/* ── XP system ── */
+const XP_RANKS=[
+  {min:0,max:499,label:'rank0',color:'#888'},
+  {min:500,max:1499,label:'rank1',color:'#2ec4b6'},
+  {min:1500,max:3499,label:'rank2',color:'#7b2d8b'},
+  {min:3500,max:7499,label:'rank3',color:'#f4a261'},
+  {min:7500,max:14999,label:'rank4',color:'#e63946'},
+  {min:15000,max:Infinity,label:'rank5',color:'#ffd700'},
+];
+function getRank(xp){return XP_RANKS.find(r=>xp>=r.min&&xp<=r.max)||XP_RANKS[0];}
+function addXP(uid,amount,reason){
+  const cur=S.get('xp_'+uid,0);
+  const next=cur+amount;
+  S.set('xp_'+uid,next);
+  showToast('+'+amount+' XP',reason,'⚡',2500);
+  const prevRank=getRank(cur);
+  const newRank=getRank(next);
+  if(prevRank.label!==newRank.label){
+    sendNotif('¡Subiste de rango!','Ahora eres '+newRank.label+' 🎉');
+    setTimeout(()=>playAlarm(),300);
+  }
+}
+
+/* ── Motivational messages ── */
+const MOTIV_ES=[
+  '¡Cada hábito que construyes hoy es una versión mejor de ti mañana! 💪',
+  'La disciplina es elegir entre lo que quieres ahora y lo que quieres más. ⚡',
+  'No tienes pendientes — tienes oportunidades esperando. 🎯',
+  'Tu racha no se rompe sola. ¡Sigue! 🔥',
+  'Los pequeños pasos de hoy son los grandes logros de mañana. 🚀',
+  'Recuerda tu objetivo. ¿Por qué empezaste? ¡No pares! 💎',
+];
+const MOTIV_EN=[
+  'Every habit you build today is a better version of you tomorrow! 💪',
+  'Discipline is choosing between what you want now and what you want most. ⚡',
+  'You don\'t have pending items — you have opportunities waiting. 🎯',
+  'Your streak doesn\'t break itself. Keep going! 🔥',
+  'Small steps today are great achievements tomorrow. 🚀',
+];
+function getMotiv(lang){const m=lang==='es'?MOTIV_ES:MOTIV_EN;return m[Math.floor(Math.random()*m.length)];}
+
+/* ── Default data ── */
+const DD={
+  tasks:[
+    {id:1,text:'Revisar propuesta del cliente',energy:'alta',quad:0,done:false,category:'trabajo',time:'09:00',xpVal:30},
+    {id:2,text:'Planificar sprint semanal',energy:'alta',quad:1,done:false,category:'trabajo',time:'10:30',xpVal:30},
+    {id:3,text:'Leer 30 minutos',energy:'baja',quad:1,done:false,category:'personal',time:'20:00',xpVal:20},
+  ],
+  habits:[
+    {id:1,name:'Meditación',emoji:'🧘',streak:0,history:[],time:'07:00'},
+    {id:2,name:'Ejercicio',emoji:'💪',streak:0,history:[],time:'07:30'},
+    {id:3,name:'Lectura',emoji:'📚',streak:0,history:[],time:'20:00'},
+    {id:4,name:'Hidratación 2L',emoji:'💧',streak:0,history:[],time:''},
+  ],
+  goals:[
+    {id:1,title:'Lanzar mi producto',current:13,target:20,unit:'tareas',deadline:'2026-06-30',emoji:'🚀',actions:[]},
+    {id:2,title:'Correr 50km acumulados',current:18,target:50,unit:'km',deadline:'2026-07-31',emoji:'🏃',actions:[]},
+  ],
+  projects:[
+    {id:1,title:'Rediseño de app',tag:'Diseño',tagColor:'#7b2d8b',status:'progress',steps:[{id:1,text:'Wireframes',done:true},{id:2,text:'UI Kit',done:true},{id:3,text:'Prototipo',done:false}]},
+    {id:2,title:'Campaña Q2',tag:'Marketing',tagColor:'#e63946',status:'pending',steps:[{id:1,text:'Brief',done:false},{id:2,text:'Copy',done:false}]},
+    {id:3,title:'Setup servidor',tag:'Sistema',tagColor:'#2ec4b6',status:'done',steps:[{id:1,text:'Config',done:true}]},
+  ],
+  pending:[],
+  reminders:[],
+};
+
+/* ── Splash ── */
+function Splash({onDone}){
+  const [phase,setPhase]=useState(0);
+  useEffect(()=>{
+    const t=[
+      setTimeout(()=>setPhase(1),200),
+      setTimeout(()=>setPhase(2),900),
+      setTimeout(()=>setPhase(3),1500),
+      setTimeout(()=>setPhase(4),2600),
+      setTimeout(()=>onDone(),3200),
+    ];
+    return()=>t.forEach(clearTimeout);
+  },[]);
+  const letters='KRONOS'.split('');
+  return(
+    <div className="splash" style={{animation:phase===4?'splashOut .5s ease forwards':'none'}}>
+      <div className="splash-letters">
+        {letters.map((l,i)=>(
+          <span key={i} className={`splash-letter${i===0?'':''}`} style={{
+            animation:phase>=1?`letterDrop .5s cubic-bezier(.23,1,.32,1) ${i*.07}s both`:'none',
+            color:i<1?'var(--acc)':'var(--white)',
+          }}>{l}</span>
+        ))}
+      </div>
+      <div className="splash-line" style={{width:phase>=2?100:0,animation:phase>=2?'glowLine .5s ease both':'none'}}/>
+      <div className="splash-tag" style={{animation:phase>=3?'tagFade .6s ease both':'none'}}>
+        Tu vida · bajo control
+      </div>
+    </div>
+  );
+}
+
+/* ── Auth ── */
+function Auth({onLogin,lang}){
+  const Tr=T[lang]||T.es;
+  const [mode,setMode]=useState('login');
+  const [form,setForm]=useState({name:'',email:'',pass:''});
+  const [err,setErr]=useState('');
+  const [loading,setLoading]=useState(false);
+
+  const submit=async()=>{
+    setErr('');setLoading(true);
+    await new Promise(r=>setTimeout(r,400));
+    if(!form.email.trim()||!form.pass.trim()){setErr('Completa todos los campos.');setLoading(false);return;}
+    if(form.pass.length<4){setErr('Contraseña mínimo 4 caracteres.');setLoading(false);return;}
+    const users=S.get('users',{});
+    if(mode==='register'){
+      if(!form.name.trim()){setErr('Escribe tu nombre.');setLoading(false);return;}
+      if(users[form.email]){setErr('Correo ya registrado.');setLoading(false);return;}
+      users[form.email]={name:form.name,pass:form.pass,joined:Date.now()};
+      S.set('users',users);
+    }else{
+      const u=users[form.email];
+      if(!u||u.pass!==form.pass){setErr('Credenciales incorrectas.');setLoading(false);return;}
+    }
+    const session={email:form.email,name:users[form.email].name};
+    S.set('session',session);
+    setLoading(false);
+    onLogin(session);
+  };
+
+  return(
+    <div className="auth-wrap">
+      <div className="auth-card fade">
+        <div style={{marginBottom:32,textAlign:'center'}}>
+          <div className="auth-logo">KR<span>O</span>NOS</div>
+          <div style={{fontSize:13,color:'var(--g1)'}}>{Tr.appSub}</div>
+        </div>
+        <div className="card" style={{borderRadius:16}}>
+          <div style={{display:'flex',borderBottom:'1px solid var(--b1)',marginBottom:24}}>
+            {['login','register'].map(m=>(
+              <button key={m} className={`auth-tab${mode===m?' active':''}`}
+                onClick={()=>{setMode(m);setErr('');setForm({name:'',email:'',pass:''});}}>
+                {m==='login'?Tr.login:Tr.reg}
+              </button>
+            ))}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            {mode==='register'&&(
+              <div>
+                <div className="input-label">{Tr.name}</div>
+                <input className="inp" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Tu nombre"/>
+              </div>
+            )}
+            <div>
+              <div className="input-label">{Tr.email}</div>
+              <input className="inp" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="correo@ejemplo.com"/>
+            </div>
+            <div>
+              <div className="input-label">{Tr.pass}</div>
+              <input className="inp" type="password" value={form.pass} onChange={e=>setForm(f=>({...f,pass:e.target.value}))} placeholder="••••••••"
+                onKeyDown={e=>e.key==='Enter'&&submit()}/>
+            </div>
+            {err&&<div style={{background:'#2a0a0a',border:'1px solid #4a1515',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#ff6b6b'}}>{err}</div>}
+            <button className="btn btn-primary" onClick={submit} disabled={loading} style={{width:'100%',marginTop:4,padding:'12px'}}>
+              {loading?'...':(mode==='login'?Tr.enter:Tr.create)}
+            </button>
+          </div>
+        </div>
+        <div style={{textAlign:'center',marginTop:16,fontSize:11,color:'var(--g2)'}}>
+          Datos guardados localmente en tu dispositivo 🔒
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Nav ── */
+const NAV_ITEMS=[
+  {id:'dash',icon:'⚡',key:'dash'},
+  {id:'tareas',icon:'✅',key:'tareas'},
+  {id:'habitos',icon:'🔄',key:'habitos'},
+  {id:'metas',icon:'🎯',key:'metas'},
+  {id:'proyectos',icon:'📋',key:'proyectos'},
+  {id:'enfoque',icon:'🎯',key:'enfoque'},
+  {id:'pend',icon:'⏳',key:'pend'},
+  {id:'recs',icon:'🔔',key:'recs'},
+  {id:'logros',icon:'🏆',key:'logros'},
+  {id:'analisis',icon:'📊',key:'analisis'},
+];
+
+/* ── Focus Worker via message passing ── */
+function useFocusTimer(){
+  const [time,setTime]=useState(25*60);
+  const [running,setRunning]=useState(false);
+  const [phase,setPhase]=useState('work'); // work | break
+  const [sessions,setSessions]=useState(0);
+  const intervalRef=useRef(null);
+  const timeRef=useRef(25*60);
+  const runRef=useRef(false);
+
+  const tick=useCallback(()=>{
+    if(!runRef.current)return;
+    timeRef.current-=1;
+    setTime(timeRef.current);
+    if(timeRef.current<=0){
+      runRef.current=false;
+      setRunning(false);
+      playAlarm();
+      if(phase==='work'){
+        const s=sessions+1;setSessions(s);
+        sendNotif('¡Sesión completada! 🎉',`Completaste ${s} sesión(es). Tómate un descanso bien merecido.`);
+        const breakTime=s%4===0?15*60:5*60;
+        timeRef.current=breakTime;setTime(breakTime);setPhase('break');
+        showToast('Descanso','Tiempo de descanso: '+(s%4===0?'15':'5')+' min 😌','🌿',4000);
+      }else{
+        sendNotif('Descanso terminado ⚡','¡A por otra sesión de enfoque!');
+        timeRef.current=25*60;setTime(25*60);setPhase('work');
+        showToast('¡A trabajar!','Nueva sesión lista. ¡Tú puedes!','🔥',3000);
+      }
+    }
+  },[phase,sessions]);
+
+  useEffect(()=>{
+    if(running){
+      runRef.current=true;
+      intervalRef.current=setInterval(tick,1000);
+    }else{
+      runRef.current=false;
+      clearInterval(intervalRef.current);
+    }
+    return()=>clearInterval(intervalRef.current);
+  },[running,tick]);
+
+  // Keep running when tab is hidden using visibilitychange
+  useEffect(()=>{
+    const handle=()=>{
+      if(!document.hidden&&running){
+        clearInterval(intervalRef.current);
+        intervalRef.current=setInterval(tick,1000);
+      }
+    };
+    document.addEventListener('visibilitychange',handle);
+    return()=>document.removeEventListener('visibilitychange',handle);
+  },[running,tick]);
+
+  const setDuration=useCallback((sec)=>{
+    clearInterval(intervalRef.current);
+    runRef.current=false;
+    setRunning(false);
+    timeRef.current=sec;
+    setTime(sec);
+    setPhase('work');
+  },[]);
+
+  const toggle=useCallback(()=>{
+    if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+    setRunning(r=>!r);
+  },[]);
+
+  const reset=useCallback(()=>{
+    clearInterval(intervalRef.current);
+    runRef.current=false;
+    setRunning(false);
+    timeRef.current=25*60;setTime(25*60);setPhase('work');
+  },[]);
+
+  return{time,running,phase,sessions,toggle,reset,setDuration};
+}
+
+/* ── Habit heatmap ── */
+function HabitHeatmap({history}){
+  const days=[];
+  const today=new Date();
+  for(let i=62;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const k=d.toISOString().slice(0,10);
+    days.push({k,done:history.includes(k),today:i===0});
+  }
+  return(
+    <div style={{display:'grid',gridTemplateColumns:'repeat(9,1fr)',gap:3,marginTop:8}}>
+      {days.map(d=>(
+        <div key={d.k} title={d.k} style={{
+          aspectRatio:'1',borderRadius:3,
+          background:d.done?'var(--acc)':d.today?'var(--b2)':'var(--b1)',
+          outline:d.today?'2px solid var(--acc2)':'none',
+          outlineOffset:1,
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+/* ── Circular progress ── */
+function CircularProgress({value,max,size=120,stroke=10,color='var(--acc)'}){
+  const pct=Math.min(100,Math.round((value/max)*100));
+  const r=(size-stroke)/2;
+  const circ=2*Math.PI*r;
+  const dash=circ*pct/100;
+  return(
+    <svg width={size} height={size} style={{transform:'rotate(-90deg)'}}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--b1)" strokeWidth={stroke}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:'stroke-dasharray .4s ease'}}/>
+    </svg>
+  );
+}
+
+/* ── Main App ── */
+function App(){
+  const [splash,setSplash]=useState(true);
+  const [user,setUser]=useState(()=>S.get('session',null));
+  const [lang,setLang]=useState(()=>S.get('lang','es'));
+  const [tab,setTab]=useState('dash');
+  const [sidebarOpen,setSidebarOpen]=useState(false);
+  const [now,setNow]=useState(new Date());
+  const Tr=T[lang]||T.es;
+
+  const uid=user?.email?.replace(/[^a-z0-9]/gi,'_')||'';
+
+  // Data state with localStorage persistence
+  const [tasks,setTasksR]=useState(()=>S.get('tasks_'+uid,DD.tasks));
+  const [habits,setHabitsR]=useState(()=>S.get('habits_'+uid,DD.habits));
+  const [goals,setGoalsR]=useState(()=>S.get('goals_'+uid,DD.goals));
+  const [projects,setProjectsR]=useState(()=>S.get('proj_'+uid,DD.projects));
+  const [pending,setPendingR]=useState(()=>S.get('pend_'+uid,DD.pending));
+  const [reminders,setRemindersR]=useState(()=>S.get('recs_'+uid,DD.reminders));
+  const [xp,setXpR]=useState(()=>S.get('xp_'+uid,0));
+  const [notifOn,setNotifOn]=useState(Notification.permission==='granted');
+  const [sound,setSound]=useState(null);
+
+  const setTasks=v=>{const n=typeof v==='function'?v(tasks):v;setTasksR(n);S.set('tasks_'+uid,n);};
+  const setHabits=v=>{const n=typeof v==='function'?v(habits):v;setHabitsR(n);S.set('habits_'+uid,n);};
+  const setGoals=v=>{const n=typeof v==='function'?v(goals):v;setGoalsR(n);S.set('goals_'+uid,n);};
+  const setProjects=v=>{const n=typeof v==='function'?v(projects):v;setProjectsR(n);S.set('proj_'+uid,n);};
+  const setPending=v=>{const n=typeof v==='function'?v(pending):v;setPendingR(n);S.set('pend_'+uid,n);};
+  const setReminders=v=>{const n=typeof v==='function'?v(reminders):v;setRemindersR(n);S.set('recs_'+uid,n);};
+
+  useEffect(()=>{const t=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(t);},[]);
+
+  // Notification scheduler
+  useEffect(()=>{
+    if(!uid)return;
+    const check=()=>{
+      const nowMs=Date.now();
+      reminders.forEach(r=>{
+        if(r.done||!r.datetime)return;
+        const diff=new Date(r.datetime)-nowMs;
+        if(diff>0&&diff<60000){sendNotif('Recordatorio',r.text);}
+      });
+      // Daily habit motivation at 8am
+      const h=new Date().getHours();
+      if(h===8&&Notification.permission==='granted'){
+        const undone=habits.filter(h=>!h.history?.includes(new Date().toISOString().slice(0,10)));
+        if(undone.length>0){sendNotif('Buenos días 🌅',`Tienes ${undone.length} hábito(s) pendiente(s) hoy. ¡Tú puedes!`);}
+      }
+      // Pending deadline today
+      pending.forEach(p=>{
+        if(p.done||!p.deadline)return;
+        const d=new Date(p.deadline);d.setHours(0,0,0,0);
+        const today=new Date();today.setHours(0,0,0,0);
+        if(d.getTime()===today.getTime()){sendNotif('Pendiente vence hoy ⚠️',p.text);}
+      });
+    };
+    check();
+    const t=setInterval(check,30000);
+    return()=>clearInterval(t);
+  },[reminders,habits,pending,uid]);
+
+  // Auto-move expired goals to pending
+  useEffect(()=>{
+    if(!uid)return;
+    const today=new Date();today.setHours(0,0,0,0);
+    goals.forEach(g=>{
+      if(!g.deadline)return;
+      const d=new Date(g.deadline);d.setHours(0,0,0,0);
+      if(d<today&&g.current<g.target&&!pending.find(p=>p.sourceId===g.id)){
+        setPending(ps=>[...ps,{id:Date.now()+Math.random(),text:g.emoji+' '+g.title,deadline:g.deadline,done:false,auto:true,sourceId:g.id}]);
+        sendNotif('Objetivo vencido ⚠️',g.title+' no se completó a tiempo.');
+      }
+    });
+  },[goals]);
+
+  // Sound control
+  useEffect(()=>{playAmbient(sound);},[sound]);
+
+  const focus=useFocusTimer();
+  const rank=getRank(xp);
+  const todayKey=new Date().toISOString().slice(0,10);
+  const doneT=tasks.filter(t=>t.done).length;
+  const doneH=habits.filter(h=>h.history?.includes(todayKey)).length;
+  const pendCount=pending.filter(p=>!p.done).length;
+  const recCount=reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).length;
+
+  const requestNotif=async()=>{
+    const r=await Notification.requestPermission();
+    setNotifOn(r==='granted');
+    if(r==='granted'){showToast('Notificaciones activadas','Recibirás alertas de recordatorios y hábitos.','🔔',3000);}
+  };
+
+  const logout=()=>{S.set('session',null);setUser(null);};
+  const changeLang=l=>{setLang(l);S.set('lang',l);};
+
+  const gainXP=(amount,reason)=>{
+    const next=xp+amount;
+    setXpR(next);S.set('xp_'+uid,next);
+    showToast('+'+amount+' XP',reason,'⚡',2000);
+  };
+
+  const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+  if(splash)return <Splash onDone={()=>setSplash(false)}/>;
+  if(!user)return <Auth onLogin={u=>{setUser(u);}} lang={lang}/>;
+
+  const navLabel=id=>Tr.nav?.[id]||id;
+
+  // ── DASHBOARD ──
+  const Dashboard=()=>{
+    const energy=new Date().getHours();
+    const eLevel=energy<8?3:energy<10?8:energy<12?9:energy<14?6:energy<16?4:energy<18?7:energy<20?5:3;
+    const nextRank=XP_RANKS.find(r=>r.min>xp)||rank;
+    const xpToNext=nextRank===rank?0:nextRank.min-xp;
+    const xpProgress=rank.max===Infinity?100:((xp-rank.min)/(rank.max-rank.min)*100);
+    const motivMsg=getMotiv(lang);
+
+    return(
+      <div className="fade">
+        {/* Motivational banner */}
+        <div style={{background:'linear-gradient(135deg,#1a0505,#0a0a1a)',border:'1px solid var(--b1)',borderRadius:14,padding:'16px 20px',marginBottom:24,display:'flex',alignItems:'center',gap:16}}>
+          <div style={{fontSize:32}}>⚡</div>
+          <div>
+            <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{motivMsg}</div>
+            <div style={{fontSize:11,color:'var(--g1)'}}>Hola, {user.name} · {new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</div>
+          </div>
+          <div style={{marginLeft:'auto',textAlign:'right'}}>
+            <div className="rank" style={{background:rank.color+'22',color:rank.color,border:`1px solid ${rank.color}44`,marginBottom:6}}>
+              {Tr[rank.label]||rank.label}
+            </div>
+            <div style={{fontSize:11,color:'var(--g1)'}}>{xp} XP</div>
+          </div>
+        </div>
+
+        {/* KPIs */}
+        <div className="kpi-grid">
+          <div className="kpi" style={{'--accent-color':'var(--acc)'}}>
+            <div className="kpi-label">Tareas hoy</div>
+            <div className="kpi-value">{doneT}<span style={{fontSize:16,fontWeight:400,color:'var(--g1)'}}>/{tasks.length}</span></div>
+            <div className="pbar-track" style={{marginTop:10}}><div className="pbar-fill" style={{width:`${tasks.length?doneT/tasks.length*100:0}%`,background:'var(--acc)'}}/></div>
+          </div>
+          <div className="kpi" style={{'--accent-color':'var(--mint)'}}>
+            <div className="kpi-label">Hábitos</div>
+            <div className="kpi-value" style={{color:'var(--mint)'}}>{doneH}<span style={{fontSize:16,fontWeight:400,color:'var(--g1)'}}>/{habits.length}</span></div>
+            <div className="pbar-track" style={{marginTop:10}}><div className="pbar-fill" style={{width:`${habits.length?doneH/habits.length*100:0}%`,background:'var(--mint)'}}/></div>
+          </div>
+          <div className="kpi" style={{'--accent-color':'var(--gold)'}}>
+            <div className="kpi-label">XP Total</div>
+            <div className="kpi-value" style={{color:'var(--gold)'}}>{xp}</div>
+            <div className="xp-track"><div className="xp-fill" style={{width:`${xpProgress}%`}}/></div>
+          </div>
+          <div className="kpi" style={{'--accent-color':'var(--purple)'}}>
+            <div className="kpi-label">Energía ahora</div>
+            <div className="kpi-value" style={{color:'var(--purple)'}}>{eLevel}<span style={{fontSize:14,color:'var(--g1)'}}>/10</span></div>
+            <div style={{fontSize:11,color:'var(--g1)',marginTop:4}}>{eLevel>=8?'⚡ Pico máximo':eLevel>=6?'✅ Buena energía':eLevel>=4?'⚠️ Moderada':'😴 Baja energía'}</div>
+          </div>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:20,marginBottom:24}}>
+          {/* Upcoming tasks */}
+          <div className="card">
+            <div className="section-title">Próximas tareas</div>
+            {tasks.filter(t=>!t.done).slice(0,4).map((task,i)=>(
+              <div key={task.id} onClick={()=>{
+                setTasks(ts=>ts.map(t=>t.id===task.id?{...t,done:true}:t));
+                gainXP(task.xpVal||20,'Tarea completada');
+              }} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 0',borderBottom:i<3?'1px solid var(--b1)':'none',cursor:'pointer',transition:'opacity .15s'}}
+              onMouseEnter={e=>e.currentTarget.style.opacity='.7'}
+              onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                <div style={{width:16,height:16,borderRadius:4,border:'1px solid var(--b2)',flexShrink:0}}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13}}>{task.text}</div>
+                  <div style={{fontSize:10,color:'var(--g1)',marginTop:2}}>{task.time} · {task.category}</div>
+                </div>
+                <div style={{fontSize:9,padding:'2px 7px',borderRadius:4,background:'var(--acc)22',color:'var(--acc)',textTransform:'uppercase',letterSpacing:'.06em'}}>{task.energy}</div>
+              </div>
+            ))}
+            {tasks.filter(t=>!t.done).length===0&&<div style={{color:'var(--g1)',fontSize:13,textAlign:'center',padding:'20px 0'}}>¡Todo completado! 🎉</div>}
+          </div>
+
+          {/* XP & Rank */}
+          <div className="card">
+            <div className="section-title">Tu rango</div>
+            <div style={{textAlign:'center',padding:'8px 0'}}>
+              <div style={{fontSize:48,marginBottom:8}}>
+                {rank.label==='rank5'?'👑':rank.label==='rank4'?'💎':rank.label==='rank3'?'🔥':rank.label==='rank2'?'⚡':rank.label==='rank1'?'🌱':'🌑'}
+              </div>
+              <div style={{fontFamily:'Syne',fontSize:18,fontWeight:800,color:rank.color,marginBottom:4}}>{Tr[rank.label]}</div>
+              <div style={{fontSize:12,color:'var(--g1)',marginBottom:16}}>{xp} XP{xpToNext?` · Faltan ${xpToNext} para subir`:' · Rango máximo'}</div>
+              <div className="xp-track" style={{height:8,borderRadius:4}}><div className="xp-fill" style={{width:`${xpProgress}%`,height:'100%'}}/></div>
+            </div>
+            <div style={{marginTop:16,display:'flex',flexDirection:'column',gap:6}}>
+              {[['Completar tarea','20 XP'],['Completar hábito','15 XP'],['Sesión de enfoque','30 XP']].map(([a,x])=>(
+                <div key={a} style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--g1)'}}>
+                  <span>{a}</span><span style={{color:'var(--gold)',fontWeight:600}}>{x}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Habits overview */}
+        <div className="card" style={{marginBottom:20}}>
+          <div className="section-title">Hábitos de hoy</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:12}}>
+            {habits.map(h=>{
+              const doneToday=h.history?.includes(todayKey);
+              return(
+                <div key={h.id} className="card-sm card-hover" onClick={()=>{
+                  if(doneToday)return;
+                  const hist=[...(h.history||[]),todayKey];
+                  const streak=computeStreak(hist);
+                  setHabits(hs=>hs.map(x=>x.id===h.id?{...x,history:hist,streak}:x));
+                  gainXP(15,'Hábito completado: '+h.name);
+                  if(streak>0&&streak%7===0)sendNotif('¡Racha de '+streak+' días! 🔥',h.name+' · '+streak+' días seguidos');
+                }} style={{cursor:doneToday?'default':'pointer',opacity:doneToday?.6:1,transition:'all .2s'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <span style={{fontSize:24}}>{h.emoji}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:500}}>{h.name}</div>
+                      <div className="streak"><span style={{fontSize:12}}>🔥</span><span className="streak-num">{h.streak}</span><span style={{color:'var(--g1)',fontSize:11}}> días</span></div>
+                    </div>
+                    {doneToday&&<div style={{color:'var(--mint)',fontSize:18}}>✓</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Pending & reminders summary */}
+        {(pendCount>0||recCount>0)&&(
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            {pendCount>0&&(
+              <div className="card" style={{borderColor:'var(--gold)44',cursor:'pointer'}} onClick={()=>setTab('pend')}>
+                <div style={{display:'flex',alignItems:'center',gap:12}}>
+                  <span style={{fontSize:28}}>⏳</span>
+                  <div><div style={{fontFamily:'Syne',fontSize:22,fontWeight:800,color:'var(--gold)'}}>{pendCount}</div><div style={{fontSize:11,color:'var(--g1)'}}>pendiente(s) activo(s)</div></div>
+                </div>
+              </div>
+            )}
+            {recCount>0&&(
+              <div className="card" style={{borderColor:'var(--acc)44',cursor:'pointer'}} onClick={()=>setTab('recs')}>
+                <div style={{display:'flex',alignItems:'center',gap:12}}>
+                  <span style={{fontSize:28}}>🔔</span>
+                  <div><div style={{fontFamily:'Syne',fontSize:22,fontWeight:800,color:'var(--acc)'}}>{recCount}</div><div style={{fontSize:11,color:'var(--g1)'}}>recordatorio(s) próximo(s)</div></div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  function computeStreak(history){
+    let s=0;const today=new Date();
+    for(let i=0;i<365;i++){
+      const d=new Date(today);d.setDate(d.getDate()-i);
+      if(history.includes(d.toISOString().slice(0,10)))s++;else break;
+    }
+    return s;
+  }
+
+  // ── FOCUS TAB ──
+  const FocusTab=()=>{
+    const AMBIENTS=[
+      {id:'rain',label:'🌧️ Lluvia',desc:'Concentración profunda'},
+      {id:'ocean',label:'🌊 Océano',desc:'Relajación activa'},
+      {id:'forest',label:'🌿 Bosque',desc:'Naturaleza viva'},
+      {id:'cafe',label:'☕ Cafetería',desc:'Energía social'},
+      {id:'fire',label:'🔥 Chimenea',desc:'Calidez y calma'},
+      {id:null,label:'🔇 Silencio',desc:'Sin sonido'},
+    ];
+    const total=focus.phase==='work'?25*60:5*60;
+    const pct=(1-(focus.time/total))*100;
+    const r=90;const circ=2*Math.PI*r;
+
+    return(
+      <div className="fade">
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}}>
+          {/* Timer */}
+          <div className="card" style={{textAlign:'center',padding:'36px 24px'}}>
+            <div style={{fontSize:11,color:focus.phase==='work'?'var(--acc)':'var(--mint)',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:24,fontWeight:600}}>
+              {focus.phase==='work'?'🎯 Sesión de enfoque':'🌿 Tiempo de descanso'}
+            </div>
+            <div style={{position:'relative',width:220,height:220,margin:'0 auto 28px'}}>
+              <svg width="220" height="220" style={{position:'absolute',top:0,left:0,transform:'rotate(-90deg)'}}>
+                <circle cx="110" cy="110" r={r} fill="none" stroke="var(--b1)" strokeWidth="10"/>
+                <circle cx="110" cy="110" r={r} fill="none"
+                  stroke={focus.phase==='work'?'var(--acc)':'var(--mint)'} strokeWidth="10"
+                  strokeDasharray={`${circ*pct/100} ${circ}`} strokeLinecap="round"
+                  style={{transition:'stroke-dasharray .5s linear'}}/>
+              </svg>
+              <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                <div style={{fontFamily:'Syne',fontSize:52,fontWeight:800,letterSpacing:'-2px',color:focus.running?'var(--white)':'var(--g1)',transition:'color .3s'}}>{fmt(focus.time)}</div>
+                <div style={{fontSize:11,color:'var(--g1)',marginTop:4}}>{focus.running?Tr.focusActive:Tr.focusWait}</div>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:24}}>
+              <button className="btn btn-primary" onClick={focus.toggle} style={{minWidth:120,padding:'12px 24px'}}>
+                {focus.running?Tr.pauseFocus:Tr.startFocus}
+              </button>
+              <button className="btn btn-ghost" onClick={focus.reset}>{Tr.resetFocus}</button>
+            </div>
+            <div style={{display:'flex',gap:8,justifyContent:'center'}}>
+              {[[25*60,'25 min'],[45*60,'45 min'],[60*60,'60 min'],[90*60,'90 min']].map(([s,l])=>(
+                <button key={l} onClick={()=>focus.setDuration(s)} className="btn btn-ghost btn-sm"
+                  style={{background:focus.time===s&&!focus.running?'var(--acc)':'transparent',color:focus.time===s&&!focus.running?'#fff':'var(--g1)',borderColor:focus.time===s&&!focus.running?'var(--acc)':'var(--b1)'}}>
+                  {l}
+                </button>
+              ))}
+            </div>
+            {focus.sessions>0&&<div style={{marginTop:20,fontSize:12,color:'var(--g1)'}}>✅ {focus.sessions} sesión(es) completada(s) hoy</div>}
+          </div>
+
+          {/* Ambient */}
+          <div className="card">
+            <div className="section-title">Ambiente sonoro</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+              {AMBIENTS.map(a=>(
+                <div key={String(a.id)} onClick={()=>setSound(s=>s===a.id?null:a.id)}
+                  className="card-sm" style={{cursor:'pointer',border:`1px solid ${sound===a.id?'var(--acc)':'var(--b1)'}`,background:sound===a.id?'var(--acc)11':'var(--s2)',transition:'all .18s'}}>
+                  <div style={{fontSize:20,marginBottom:4}}>{a.label.split(' ')[0]}</div>
+                  <div style={{fontSize:12,fontWeight:500}}>{a.label.split(' ').slice(1).join(' ')}</div>
+                  <div style={{fontSize:10,color:'var(--g1)',marginTop:2}}>{a.desc}</div>
+                  {sound===a.id&&<div style={{fontSize:10,color:'var(--acc)',marginTop:6,display:'flex',alignItems:'center',gap:4}}><span style={{display:'inline-block',width:6,height:6,background:'var(--acc)',borderRadius:'50%',animation:'pulse 1s infinite'}}/>Reproduciendo</div>}
+                </div>
+              ))}
+            </div>
+
+            <div style={{marginTop:20}}>
+              <div className="section-title">Técnica Pomodoro</div>
+              <div style={{display:'flex',flexDirection:'column',gap:8,fontSize:12,color:'var(--g1)'}}>
+                {[['1️⃣','Elige una tarea','Decide qué vas a trabajar'],['2️⃣','25 min de foco','Sin interrupciones'],['3️⃣','5 min de descanso','Desconéctate brevemente'],['4️⃣','Cada 4 sesiones','Descanso largo de 15 min']].map(([n,t,d])=>(
+                  <div key={n} style={{display:'flex',gap:10,alignItems:'flex-start',padding:'8px 10px',background:'var(--s3)',borderRadius:8}}>
+                    <span>{n}</span><div><div style={{fontWeight:600,color:'var(--white)',marginBottom:2}}>{t}</div><div>{d}</div></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── HABITS TAB ──
+  const HabitsTab=()=>{
+    const [showAdd,setShowAdd]=useState(false);
+    const [newH,setNewH]=useState({name:'',emoji:'🌟',time:''});
+    const emojis=['🌟','💪','🧘','📚','💧','🥗','🏃','🎯','✍️','😴','🎨','🎵'];
+
+    return(
+      <div className="fade">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <div>
+            <div style={{fontSize:22,fontFamily:'Syne',fontWeight:800,marginBottom:2}}>Hábitos</div>
+            <div style={{fontSize:12,color:'var(--g1)'}}>{doneH} de {habits.length} completados hoy</div>
+          </div>
+          <button className="btn btn-primary" onClick={()=>setShowAdd(v=>!v)}>+ Nuevo hábito</button>
+        </div>
+
+        {showAdd&&(
+          <div className="card fade" style={{marginBottom:20,borderColor:'var(--acc)44'}}>
+            <div className="section-title" style={{marginBottom:12}}>Nuevo hábito</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+              {emojis.map(e=>(<span key={e} onClick={()=>setNewH(h=>({...h,emoji:e}))} style={{fontSize:20,cursor:'pointer',padding:6,borderRadius:8,background:newH.emoji===e?'var(--acc)22':'transparent',outline:newH.emoji===e?'2px solid var(--acc)':'none'}}>{e}</span>))}
+            </div>
+            <div style={{display:'flex',gap:10,marginBottom:12}}>
+              <input className="inp" value={newH.name} onChange={e=>setNewH(h=>({...h,name:e.target.value}))} placeholder="Nombre del hábito" style={{flex:2}}/>
+              <input className="inp" value={newH.time} onChange={e=>setNewH(h=>({...h,time:e.target.value}))} placeholder="Hora (opcional)" style={{flex:1}}/>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-primary btn-sm" disabled={!newH.name.trim()} onClick={()=>{
+                setHabits(hs=>[...hs,{id:Date.now(),name:newH.name,emoji:newH.emoji,streak:0,history:[],time:newH.time}]);
+                setNewH({name:'',emoji:'🌟',time:''});setShowAdd(false);
+                showToast('Hábito creado','¡Empieza hoy mismo!','🌟');
+              }}>{Tr.save}</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>{Tr.cancel}</button>
+            </div>
+          </div>
+        )}
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:16}}>
+          {habits.map(h=>{
+            const doneToday=h.history?.includes(todayKey);
+            const last7=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return h.history?.includes(d.toISOString().slice(0,10));}).reverse();
+            return(
+              <div key={h.id} className="card card-hover">
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <div style={{width:44,height:44,borderRadius:12,background:`${doneToday?'var(--acc)':'var(--s3)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,transition:'background .2s'}}>{h.emoji}</div>
+                    <div>
+                      <div style={{fontSize:14,fontWeight:600}}>{h.name}</div>
+                      <div className="streak">🔥 <span className="streak-num">{h.streak}</span> <span style={{color:'var(--g1)',fontSize:11}}>días</span></div>
+                    </div>
+                  </div>
+                  <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                    {!doneToday&&<button className="btn btn-primary btn-sm" onClick={()=>{
+                      const hist=[...(h.history||[]),todayKey];
+                      const s=computeStreak(hist);
+                      setHabits(hs=>hs.map(x=>x.id===h.id?{...x,history:hist,streak:s}:x));
+                      gainXP(15,'Hábito completado: '+h.name);
+                      if(s>0&&s%7===0)sendNotif('¡Racha de '+s+' días! 🔥',h.name);
+                    }}>✓ Hecho</button>}
+                    {doneToday&&<div style={{fontSize:12,color:'var(--mint)',fontWeight:600}}>✓ Completado</div>}
+                    <button onClick={()=>setHabits(hs=>hs.filter(x=>x.id!==h.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:16}}>×</button>
+                  </div>
+                </div>
+                {/* Mini week view */}
+                <div style={{display:'flex',gap:4,marginBottom:10}}>
+                  {['L','M','M','J','V','S','D'].map((d,i)=>(
+                    <div key={i} style={{flex:1,textAlign:'center'}}>
+                      <div style={{fontSize:9,color:'var(--g2)',marginBottom:4}}>{d}</div>
+                      <div style={{height:20,borderRadius:4,background:last7[i]?'var(--acc)':'var(--b1)'}}/>
+                    </div>
+                  ))}
+                </div>
+                {/* 63-day heatmap */}
+                <HabitHeatmap history={h.history||[]}/>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // ── TASKS TAB ──
+  const TasksTab=()=>{
+    const [input,setInput]=useState('');
+    const [area,setArea]=useState('trabajo');
+    const [quad,setQuad]=useState(0);
+    const [filter,setFilter]=useState('todas');
+    const [loading,setLoading]=useState(false);
+    const AREAS=['trabajo','personal','salud','educacion','finanzas','hogar','social'];
+    const QLABELS=['Urgente · Importante','Importante · No urgente','Urgente · No importante','No urgente · No importante'];
+    const filtered=filter==='todas'?tasks:tasks.filter(t=>t.category===filter);
+
+    const addTask=async()=>{
+      if(!input.trim())return;setLoading(true);
+      try{
+        const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:`Extrae: texto, energía (alta/media/baja), hora HH:MM. JSON: {"text":"...","energy":"...","time":"HH:MM"}\nTarea: "${input}"`}]})});
+        const data=await res.json();
+        const raw=data.content?.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+        const p=JSON.parse(raw);
+        setTasks(ts=>[...ts,{id:Date.now(),...p,category:area,quad,done:false,xpVal:20}]);
+      }catch{setTasks(ts=>[...ts,{id:Date.now(),text:input,energy:'media',time:'09:00',category:area,quad,done:false,xpVal:20}]);}
+      setInput('');setLoading(false);
+    };
+
+    return(
+      <div className="fade">
+        {/* Input */}
+        <div className="card" style={{marginBottom:20}}>
+          <div style={{display:'flex',gap:10,marginBottom:input?12:0}}>
+            <input className="inp" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTask()} placeholder="Describe tu tarea en lenguaje natural..." style={{flex:1}}/>
+            <button className="btn btn-primary" onClick={addTask} disabled={loading||!input.trim()}>{loading?'...':'+ Agregar'}</button>
+          </div>
+          {input&&(
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              {AREAS.map(a=>(<button key={a} onClick={()=>setArea(a)} className="btn btn-sm" style={{background:area===a?'var(--acc)':'var(--s3)',color:area===a?'#fff':'var(--g1)',border:`1px solid ${area===a?'var(--acc)':'var(--b1)'}`,textTransform:'capitalize'}}>{a}</button>))}
+            </div>
+          )}
+        </div>
+
+        {/* Filter */}
+        <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:20}}>
+          {['todas',...AREAS].map(a=>(<button key={a} onClick={()=>setFilter(a)} className="btn btn-sm" style={{background:filter===a?'var(--white)':'transparent',color:filter===a?'var(--bg)':'var(--g1)',border:`1px solid ${filter===a?'var(--white)':'var(--b1)'}`,textTransform:'capitalize'}}>{a}</button>))}
+        </div>
+
+        {/* Eisenhower matrix */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:20}}>
+          {[0,1,2,3].map(q=>(
+            <div key={q} className="card" style={{borderColor:q===0?'var(--acc)44':q===1?'var(--mint)44':q===2?'var(--gold)44':'var(--b1)',minHeight:120}}>
+              <div style={{fontSize:10,color:q===0?'var(--acc)':q===1?'var(--mint)':q===2?'var(--gold)':'var(--g1)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,marginBottom:12}}>{QLABELS[q]}</div>
+              {filtered.filter(t=>t.quad===q).map(task=>(
+                <div key={task.id} style={{display:'flex',gap:8,marginBottom:8,opacity:task.done?.3:1}}>
+                  <div onClick={()=>{
+                    setTasks(ts=>ts.map(t=>t.id===task.id?{...t,done:!t.done}:t));
+                    if(!task.done)gainXP(task.xpVal||20,'Tarea completada');
+                  }} style={{width:14,height:14,borderRadius:3,border:`1px solid ${task.done?'var(--acc)':'var(--b2)'}`,background:task.done?'var(--acc)':'transparent',cursor:'pointer',flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    {task.done&&<div style={{width:6,height:6,background:'#fff',borderRadius:1}}/>}
+                  </div>
+                  <div style={{flex:1,fontSize:12,textDecoration:task.done?'line-through':'none',lineHeight:1.4}}>{task.text}</div>
+                  <button onClick={()=>setTasks(ts=>ts.filter(t=>t.id!==task.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:13}}>×</button>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Full list */}
+        <div className="card">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+            <div className="section-title" style={{marginBottom:0}}>Todas las tareas</div>
+            <div style={{fontSize:11,color:'var(--g1)'}}>{filtered.length} tareas</div>
+          </div>
+          {filtered.map((task,i)=>(
+            <div key={task.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 0',borderBottom:i<filtered.length-1?'1px solid var(--b1)':'none',opacity:task.done?.4:1}}>
+              <div onClick={()=>{
+                setTasks(ts=>ts.map(t=>t.id===task.id?{...t,done:!t.done}:t));
+                if(!task.done)gainXP(task.xpVal||20,'Tarea completada');
+              }} style={{width:16,height:16,borderRadius:4,border:`1px solid ${task.done?'var(--acc)':'var(--b2)'}`,background:task.done?'var(--acc)':'transparent',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {task.done&&<div style={{width:6,height:6,background:'#fff',borderRadius:1}}/>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:task.done?'line-through':'none'}}>{task.text}</div>
+                <div style={{fontSize:10,color:'var(--g1)',marginTop:2}}>{task.time} · {task.category}</div>
+              </div>
+              <div style={{fontSize:9,padding:'2px 7px',borderRadius:4,background:'var(--s3)',color:'var(--g1)',textTransform:'uppercase'}}>{task.energy}</div>
+              <button onClick={()=>setTasks(ts=>ts.filter(t=>t.id!==task.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:14}}>×</button>
+            </div>
+          ))}
+          {filtered.length===0&&<div style={{color:'var(--g1)',fontSize:13,textAlign:'center',padding:'20px 0'}}>Sin tareas en esta área</div>}
+        </div>
+      </div>
+    );
+  };
+
+  // ── GOALS TAB ──
+  const GoalsTab=()=>{
+    const [showAdd,setShowAdd]=useState(false);
+    const [newG,setNewG]=useState({title:'',current:'0',target:'',unit:'',deadline:'',emoji:'🎯',actions:[]});
+    const [newA,setNewA]=useState('');
+    const emojis=['🎯','🚀','💪','📚','💰','🏠','❤️','🌍','🏆','⚡'];
+
+    return(
+      <div className="fade">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <div><div style={{fontSize:22,fontFamily:'Syne',fontWeight:800,marginBottom:2}}>Objetivos</div><div style={{fontSize:12,color:'var(--g1)'}}>Seguimiento cuantitativo</div></div>
+          <button className="btn btn-primary" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕ Cancelar':'+ Nuevo objetivo'}</button>
+        </div>
+
+        {showAdd&&(
+          <div className="card fade" style={{marginBottom:20,borderColor:'var(--acc)44'}}>
+            <div className="section-title">Nuevo objetivo</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+              {emojis.map(e=>(<span key={e} onClick={()=>setNewG(g=>({...g,emoji:e}))} style={{fontSize:20,cursor:'pointer',padding:6,borderRadius:8,background:newG.emoji===e?'var(--acc)22':'transparent',outline:newG.emoji===e?'2px solid var(--acc)':'none'}}>{e}</span>))}
+            </div>
+            <input className="inp" value={newG.title} onChange={e=>setNewG(g=>({...g,title:e.target.value}))} placeholder="Título del objetivo" style={{marginBottom:10}}/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:10}}>
+              <div><div className="input-label">Actual</div><input className="inp" type="number" value={newG.current} min="0" onChange={e=>setNewG(g=>({...g,current:e.target.value}))}/></div>
+              <div><div className="input-label">Meta</div><input className="inp" type="number" value={newG.target} min="1" onChange={e=>setNewG(g=>({...g,target:e.target.value}))} placeholder="100"/></div>
+              <div><div className="input-label">Unidad</div><input className="inp" value={newG.unit} onChange={e=>setNewG(g=>({...g,unit:e.target.value}))} placeholder="km, págs…"/></div>
+            </div>
+            <div style={{marginBottom:12}}><div className="input-label">Fecha límite (opcional)</div><input className="inp" type="date" value={newG.deadline} onChange={e=>setNewG(g=>({...g,deadline:e.target.value}))}/></div>
+            <div style={{marginBottom:14}}>
+              <div className="input-label">Acciones</div>
+              <div style={{background:'var(--s2)',borderRadius:8,padding:12,border:'1px solid var(--b1)'}}>
+                {newG.actions.map((a,i)=>(<div key={i} style={{display:'flex',gap:8,padding:'6px 0',borderBottom:i<newG.actions.length-1?'1px solid var(--b1)':'none',fontSize:12,alignItems:'center'}}><span style={{width:6,height:6,background:'var(--acc)',borderRadius:'50%',display:'inline-block',flexShrink:0}}/><span style={{flex:1}}>{a.text}</span><button onClick={()=>setNewG(g=>({...g,actions:g.actions.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer'}}>×</button></div>))}
+                <div style={{display:'flex',gap:8,marginTop:newG.actions.length?8:0}}>
+                  <input className="inp" value={newA} onChange={e=>setNewA(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&newA.trim()){setNewG(g=>({...g,actions:[...g.actions,{id:Date.now(),text:newA,done:false}]}));setNewA('');}}} placeholder="Agrega un paso y presiona Enter" style={{fontSize:12}}/>
+                </div>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-primary btn-sm" disabled={!newG.title.trim()||!newG.target} onClick={()=>{
+                const t=parseFloat(newG.target),c=parseFloat(newG.current)||0;
+                setGoals(gs=>[...gs,{id:Date.now(),title:newG.title,current:Math.min(c,t),target:t,unit:newG.unit||'unidades',deadline:newG.deadline||'',emoji:newG.emoji,actions:newG.actions}]);
+                setNewG({title:'',current:'0',target:'',unit:'',deadline:'',emoji:'🎯',actions:[]});setShowAdd(false);
+                showToast('Objetivo creado','¡A por ello!','🎯');
+              }}>Crear objetivo</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:16}}>
+          {goals.map(g=>{
+            const pct=Math.min(100,Math.round((g.current/g.target)*100));
+            const raw=g.deadline?new Date(g.deadline):null;
+            const days=raw&&!isNaN(raw)?Math.ceil((raw-new Date())/86400000):null;
+            const doneA=g.actions?.filter(a=>a.done).length||0;
+            return(
+              <div key={g.id} className="card card-hover" style={{borderColor:pct>=100?'var(--mint)44':'var(--b1)'}}>
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
+                  <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                    <span style={{fontSize:28}}>{g.emoji}</span>
+                    <div>
+                      <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>{g.title}</div>
+                      {days!==null&&<div style={{fontSize:11,color:days<=7?'var(--acc)':'var(--g1)'}}>{days>0?days+' días restantes':days===0?'Vence hoy':'Plazo vencido'}</div>}
+                    </div>
+                  </div>
+                  <div style={{textAlign:'right',display:'flex',alignItems:'flex-start',gap:8}}>
+                    <div>
+                      <div style={{fontFamily:'Syne',fontSize:26,fontWeight:800,color:pct>=100?'var(--mint)':'var(--white)'}}>{pct}%</div>
+                      <div style={{fontSize:10,color:'var(--g1)'}}>{g.current}/{g.target} {g.unit}</div>
+                    </div>
+                    <button onClick={()=>setGoals(gs=>gs.filter(x=>x.id!==g.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:16}}>×</button>
+                  </div>
+                </div>
+                <div className="pbar-track" style={{height:6,marginBottom:14}}>
+                  <div className="pbar-fill" style={{width:`${pct}%`,background:pct>=100?'var(--mint)':'var(--acc)',boxShadow:pct>=100?'0 0 10px var(--mint)':''}}/>
+                </div>
+                {/* Circular progress overlay */}
+                <div style={{display:'flex',alignItems:'center',gap:16}}>
+                  <CircularProgress value={g.current} max={g.target} size={60} stroke={6} color={pct>=100?'var(--mint)':'var(--acc)'}/>
+                  <div style={{flex:1}}>
+                    {g.actions?.length>0&&<div style={{fontSize:11,color:'var(--g1)',marginBottom:8}}>📋 {doneA}/{g.actions.length} acciones</div>}
+                    <div style={{display:'flex',gap:8}}>
+                      <input placeholder="Actualizar..." style={{flex:1,background:'var(--s2)',border:'1px solid var(--b1)',borderRadius:6,padding:'6px 10px',color:'var(--white)',fontSize:12,outline:'none',fontFamily:'Inter'}}
+                        onKeyDown={e=>{if(e.key==='Enter'){const n=parseFloat(e.target.value);if(!isNaN(n)){setGoals(gs=>gs.map(x=>x.id===g.id?{...x,current:Math.min(n,x.target)}:x));gainXP(10,'Progreso registrado');e.target.value='';}}}}/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {goals.length===0&&!showAdd&&<div style={{textAlign:'center',padding:'60px 0',color:'var(--g1)'}}>Sin objetivos. Toca "+ Nuevo objetivo".</div>}
+      </div>
+    );
+  };
+
+  // ── PROJECTS TAB (Kanban) ──
+  const ProjectsTab=()=>{
+    const [showAdd,setShowAdd]=useState(false);
+    const [newP,setNewP]=useState({title:'',tag:'',tagColor:'#e63946',status:'pending',steps:[]});
+    const [newStep,setNewStep]=useState('');
+    const STATUSES=[{id:'pending',label:'• Pendiente',color:'#e63946'},{id:'progress',label:'• En progreso',color:'#f4a261'},{id:'done',label:'• Finalizado',color:'#2ec4b6'}];
+
+    return(
+      <div className="fade">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <div><div style={{fontSize:22,fontFamily:'Syne',fontWeight:800,marginBottom:2}}>Proyectos</div><div style={{fontSize:12,color:'var(--g1)'}}>Tablero Kanban</div></div>
+          <button className="btn btn-primary" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕':'+ Nuevo proyecto'}</button>
+        </div>
+
+        {showAdd&&(
+          <div className="card fade" style={{marginBottom:20}}>
+            <div className="section-title">Nuevo proyecto</div>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:10,marginBottom:10}}>
+              <input className="inp" value={newP.title} onChange={e=>setNewP(p=>({...p,title:e.target.value}))} placeholder="Título del proyecto"/>
+              <input className="inp" value={newP.tag} onChange={e=>setNewP(p=>({...p,tag:e.target.value}))} placeholder="Etiqueta (ej: Diseño)"/>
+            </div>
+            <div style={{marginBottom:10}}>
+              <div className="input-label">Estado inicial</div>
+              <div style={{display:'flex',gap:8}}>
+                {STATUSES.map(s=>(<button key={s.id} onClick={()=>setNewP(p=>({...p,status:s.id}))} className="btn btn-sm" style={{background:newP.status===s.id?s.color+'22':'transparent',color:newP.status===s.id?s.color:'var(--g1)',border:`1px solid ${newP.status===s.id?s.color:'var(--b1)'}`}}>{s.label}</button>))}
+              </div>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div className="input-label">Pasos</div>
+              {newP.steps.map((s,i)=>(<div key={i} style={{display:'flex',gap:8,padding:'5px 0',fontSize:12,alignItems:'center'}}><span style={{color:'var(--g1)'}}>·</span><span style={{flex:1}}>{s.text}</span><button onClick={()=>setNewP(p=>({...p,steps:p.steps.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer'}}>×</button></div>))}
+              <div style={{display:'flex',gap:8,marginTop:6}}>
+                <input className="inp" value={newStep} onChange={e=>setNewStep(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&newStep.trim()){setNewP(p=>({...p,steps:[...p.steps,{id:Date.now(),text:newStep,done:false}]}));setNewStep('');}}} placeholder="Agrega un paso..." style={{fontSize:12}}/>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-primary btn-sm" disabled={!newP.title.trim()} onClick={()=>{
+                setProjects(ps=>[...ps,{id:Date.now(),...newP}]);
+                setNewP({title:'',tag:'',tagColor:'#e63946',status:'pending',steps:[]});setShowAdd(false);
+              }}>Crear proyecto</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        <div className="board">
+          {STATUSES.map(st=>{
+            const cols=projects.filter(p=>p.status===st.id);
+            return(
+              <div key={st.id} className="board-col">
+                <div className="board-col-header">
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <div className="board-dot" style={{background:st.color}}/>
+                    <div style={{fontSize:12,fontWeight:600,color:st.color}}>{st.label.replace('• ','')}</div>
+                  </div>
+                  <div style={{background:'var(--s3)',borderRadius:20,padding:'2px 8px',fontSize:11,color:'var(--g1)'}}>{cols.length}</div>
+                </div>
+                {cols.map(p=>{
+                  const doneSteps=p.steps?.filter(s=>s.done).length||0;
+                  const totalSteps=p.steps?.length||0;
+                  return(
+                    <div key={p.id} className="board-card">
+                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+                        {p.tag&&<div className="tag" style={{background:p.tagColor+'22',color:p.tagColor}}>{p.tag}</div>}
+                        <button onClick={()=>setProjects(ps=>ps.filter(x=>x.id!==p.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',marginLeft:'auto',fontSize:14}}>×</button>
+                      </div>
+                      <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>{p.title}</div>
+                      {totalSteps>0&&<div>
+                        <div style={{fontSize:11,color:'var(--g1)',marginBottom:6}}>{doneSteps}/{totalSteps} etapas</div>
+                        <div className="pbar-track" style={{height:3,marginBottom:8}}><div className="pbar-fill" style={{width:`${totalSteps?doneSteps/totalSteps*100:0}%`,background:st.color}}/></div>
+                        {p.steps.map(s=>(<div key={s.id} onClick={()=>setProjects(ps=>ps.map(x=>x.id===p.id?{...x,steps:x.steps.map(t=>t.id===s.id?{...t,done:!t.done}:t)}:x))} style={{display:'flex',gap:6,alignItems:'center',padding:'4px 0',cursor:'pointer',opacity:s.done?.5:1}}>
+                          <div style={{width:12,height:12,borderRadius:3,border:`1px solid ${s.done?st.color:'var(--b2)'}`,background:s.done?st.color:'transparent',flexShrink:0}}/>
+                          <div style={{fontSize:11,textDecoration:s.done?'line-through':'none'}}>{s.text}</div>
+                        </div>))}
+                      </div>}
+                      <div style={{display:'flex',gap:6,marginTop:10}}>
+                        {STATUSES.filter(s=>s.id!==st.id).map(s=>(<button key={s.id} onClick={()=>setProjects(ps=>ps.map(x=>x.id===p.id?{...x,status:s.id}:x))} style={{flex:1,background:'none',border:`1px solid ${s.color}44`,borderRadius:6,padding:'5px 0',fontSize:10,color:s.color,cursor:'pointer',fontFamily:'Inter'}}>→ {s.label.replace('• ','')}</button>))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // ── PENDING TAB ──
+  const PendingTab=()=>{
+    const [showAdd,setShowAdd]=useState(false);
+    const [newP,setNewP]=useState({text:'',deadline:''});
+    return(
+      <div className="fade">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <div><div style={{fontSize:22,fontFamily:'Syne',fontWeight:800,marginBottom:2}}>Pendientes</div><div style={{fontSize:12,color:'var(--g1)'}}>{pendCount} activo(s)</div></div>
+          <button className="btn btn-primary" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕ Cancelar':'+ Agregar'}</button>
+        </div>
+        {showAdd&&(
+          <div className="card fade" style={{marginBottom:20}}>
+            <input className="inp" value={newP.text} onChange={e=>setNewP(p=>({...p,text:e.target.value}))} placeholder="Descripción del pendiente..." style={{marginBottom:10}}/>
+            <div style={{marginBottom:12}}><div className="input-label">Fecha límite (opcional)</div><input className="inp" type="date" value={newP.deadline} onChange={e=>setNewP(p=>({...p,deadline:e.target.value}))}/></div>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-primary btn-sm" disabled={!newP.text.trim()} onClick={()=>{setPending(ps=>[...ps,{id:Date.now(),...newP,done:false,auto:false}]);setNewP({text:'',deadline:''});setShowAdd(false);}}>Guardar</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+            </div>
+          </div>
+        )}
+        <div className="card">
+          {pending.length===0&&<div style={{color:'var(--g1)',fontSize:13,textAlign:'center',padding:'30px 0'}}>¡Sin pendientes! Todo en orden ✅</div>}
+          {pending.map((p,i)=>(
+            <div key={p.id} style={{display:'flex',alignItems:'center',gap:12,padding:'13px 0',borderBottom:i<pending.length-1?'1px solid var(--b1)':'none',opacity:p.done?.4:1}}>
+              <div onClick={()=>{setPending(ps=>ps.map(x=>x.id===p.id?{...x,done:!x.done}:x));if(!p.done)gainXP(10,'Pendiente completado');}} style={{width:16,height:16,borderRadius:4,border:`1px solid ${p.done?'var(--mint)':'var(--b2)'}`,background:p.done?'var(--mint)':'transparent',cursor:'pointer',flexShrink:0}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:p.done?'line-through':'none'}}>{p.auto&&<span style={{fontSize:9,background:'var(--gold)22',color:'var(--gold)',borderRadius:3,padding:'1px 5px',marginRight:6}}>⚡ auto</span>}{p.text}</div>
+                {p.deadline&&<div style={{fontSize:10,color:'var(--g1)',marginTop:2}}>Vencía: {new Date(p.deadline).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</div>}
+              </div>
+              <button onClick={()=>setPending(ps=>ps.filter(x=>x.id!==p.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:14}}>×</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── REMINDERS TAB ──
+  const RemindersTab=()=>{
+    const [showAdd,setShowAdd]=useState(false);
+    const [newR,setNewR]=useState({text:'',datetime:'',repeat:'ninguna'});
+    const upcoming=reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+    return(
+      <div className="fade">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <div><div style={{fontSize:22,fontFamily:'Syne',fontWeight:800,marginBottom:2}}>Recordatorios</div><div style={{fontSize:12,color:'var(--g1)'}}>{recCount} próximo(s)</div></div>
+          <button className="btn btn-primary" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕':'+ Nuevo'}</button>
+        </div>
+        {showAdd&&(
+          <div className="card fade" style={{marginBottom:20}}>
+            <input className="inp" value={newR.text} onChange={e=>setNewR(r=>({...r,text:e.target.value}))} placeholder="¿Qué quieres recordar?" style={{marginBottom:10}}/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
+              <div><div className="input-label">Fecha y hora</div><input className="inp" type="datetime-local" value={newR.datetime} onChange={e=>setNewR(r=>({...r,datetime:e.target.value}))}/></div>
+              <div><div className="input-label">Repetir</div><select className="inp" value={newR.repeat} onChange={e=>setNewR(r=>({...r,repeat:e.target.value}))}>
+                <option value="ninguna">Sin repetición</option>
+                <option value="diario">Diario</option>
+                <option value="semanal">Semanal</option>
+                <option value="mensual">Mensual</option>
+              </select></div>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-primary btn-sm" disabled={!newR.text.trim()} onClick={()=>{
+                setReminders(rs=>[...rs,{id:Date.now(),...newR,done:false}]);
+                setNewR({text:'',datetime:'',repeat:'ninguna'});setShowAdd(false);
+                showToast('Recordatorio creado','Te notificaremos a tiempo 🔔','🔔');
+                if(!notifOn)showToast('Activa notificaciones','Para recibir alertas, actívalas en Configuración','⚠️',5000);
+              }}>Guardar</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+            </div>
+          </div>
+        )}
+        {upcoming.length>0&&(
+          <div style={{marginBottom:20}}>
+            <div className="section-title">Próximos</div>
+            <div className="card">
+              {upcoming.map((r,i)=>(
+                <div key={r.id} style={{display:'flex',gap:12,padding:'12px 0',borderBottom:i<upcoming.length-1?'1px solid var(--b1)':'none',alignItems:'center'}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:'var(--acc)22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🔔</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500}}>{r.text}</div>
+                    <div style={{fontSize:11,color:'var(--g1)',marginTop:2}}>{new Date(r.datetime).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}{r.repeat!=='ninguna'&&' · 🔄 '+r.repeat}</div>
+                  </div>
+                  <button onClick={()=>setReminders(rs=>rs.filter(x=>x.id!==r.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:14}}>×</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="section-title">Todos</div>
+        <div className="card">
+          {reminders.length===0&&<div style={{color:'var(--g1)',fontSize:13,textAlign:'center',padding:'30px 0'}}>Sin recordatorios. Toca "+ Nuevo".</div>}
+          {reminders.map((r,i)=>(
+            <div key={r.id} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 0',borderBottom:i<reminders.length-1?'1px solid var(--b1)':'none',opacity:r.done?.4:1}}>
+              <div onClick={()=>{setReminders(rs=>rs.map(x=>x.id===r.id?{...x,done:!x.done}:x));if(!r.done)gainXP(5,'Recordatorio completado');}} style={{width:16,height:16,borderRadius:4,border:`1px solid ${r.done?'var(--mint)':'var(--b2)'}`,background:r.done?'var(--mint)':'transparent',cursor:'pointer',flexShrink:0}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:r.done?'line-through':'none'}}>{r.text}</div>
+                {r.datetime&&<div style={{fontSize:10,color:'var(--g1)',marginTop:2}}>{new Date(r.datetime).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}{r.repeat!=='ninguna'&&' · 🔄 '+r.repeat}</div>}
+              </div>
+              <button onClick={()=>setReminders(rs=>rs.filter(x=>x.id!==r.id))} style={{background:'none',border:'none',color:'var(--g2)',cursor:'pointer',fontSize:14}}>×</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── ACHIEVEMENTS TAB ──
+  const AchievementsTab=()=>{
+    const ACHV=[
+      {id:'first_task',icon:'✅',title:'Primera tarea',desc:'Completa tu primera tarea',color:'var(--mint)',check:()=>tasks.some(t=>t.done)},
+      {id:'streak_7',icon:'🔥',title:'Racha de 7 días',desc:'Mantén un hábito 7 días seguidos',color:'var(--gold)',check:()=>habits.some(h=>h.streak>=7)},
+      {id:'xp_500',icon:'⚡',title:'500 XP',desc:'Acumula 500 puntos de experiencia',color:'var(--acc)',check:()=>xp>=500},
+      {id:'xp_1000',icon:'💎',title:'1000 XP',desc:'Acumula 1000 puntos',color:'var(--purple)',check:()=>xp>=1000},
+      {id:'goal_100',icon:'🎯',title:'Objetivo al 100%',desc:'Completa un objetivo al 100%',color:'var(--mint)',check:()=>goals.some(g=>g.current>=g.target)},
+      {id:'habits_7',icon:'🧘',title:'7 hábitos',desc:'Crea 7 hábitos diferentes',color:'var(--gold)',check:()=>habits.length>=7},
+      {id:'focus_5',icon:'🧠',title:'5 sesiones de enfoque',desc:'Completa 5 sesiones Pomodoro',color:'var(--acc)',check:()=>focus.sessions>=5},
+      {id:'all_tasks',icon:'🏆',title:'Día perfecto',desc:'Completa todas las tareas del día',color:'#ffd700',check:()=>tasks.length>0&&tasks.every(t=>t.done)},
+    ];
+    return(
+      <div className="fade">
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:22,fontFamily:'Syne',fontWeight:800,marginBottom:2}}>Logros</div>
+          <div style={{fontSize:12,color:'var(--g1)'}}>{ACHV.filter(a=>a.check()).length} de {ACHV.length} desbloqueados</div>
+        </div>
+        <div className="pbar-track" style={{height:8,marginBottom:24,borderRadius:4}}>
+          <div className="pbar-fill" style={{width:`${ACHV.filter(a=>a.check()).length/ACHV.length*100}%`,background:'linear-gradient(90deg,var(--acc),var(--gold))'}}/></div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:12}}>
+          {ACHV.map(a=>{
+            const unlocked=a.check();
+            return(
+              <div key={a.id} className="card card-hover" style={{opacity:unlocked?1:.5,borderColor:unlocked?a.color+'44':'var(--b1)',transition:'all .2s'}}>
+                <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                  <div style={{width:48,height:48,borderRadius:12,background:unlocked?a.color+'22':'var(--s3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0,filter:unlocked?'none':'grayscale(1)'}}>
+                    {unlocked?a.icon:'🔒'}
+                  </div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,marginBottom:2,color:unlocked?a.color:'var(--white)'}}>{a.title}</div>
+                    <div style={{fontSize:11,color:'var(--g1)'}}>{a.desc}</div>
+                    {unlocked&&<div style={{fontSize:10,color:a.color,marginTop:4}}>✓ Desbloqueado</div>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // ── ANALYSIS TAB ──
+  const AnalysisTab=()=>{
+    const [aiResult,setAiResult]=useState('');const [aiLoading,setAiLoading]=useState(false);
+    const runAI=async()=>{
+      setAiLoading(true);setAiResult('');
+      const done=tasks.filter(t=>t.done).length,pend=tasks.filter(t=>!t.done).length,habDone=doneH,hour=new Date().getHours();
+      try{
+        const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Eres un coach de productividad de élite. Analiza estos datos y da 4-5 insights con recomendaciones accionables, motivadoras y específicas. Sin emojis excesivos. En ${lang==='en'?'English':'español'}.\nHora: ${hour}:00 | Tareas completadas: ${done}/${done+pend} | Hábitos hoy: ${habDone}/${habits.length} | XP total: ${xp} | Racha máx: ${Math.max(0,...habits.map(h=>h.streak))} días`}]})});
+        const data=await res.json();
+        setAiResult(data.content?.map(c=>c.text||'').join('')||'—');
+      }catch{setAiResult('No se pudo conectar. Verifica tu conexión.');}
+      setAiLoading(false);
+    };
+    const DAYS=['L','M','X','J','V','S','D'];
+    const weekData=[8,6,9,7,5,3,0];
+    return(
+      <div className="fade">
+        <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:20,marginBottom:20}}>
+          <div className="card">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:aiResult||aiLoading?16:0}}>
+              <div><div className="section-title">Diagnóstico IA</div><div style={{fontSize:13}}>Análisis personalizado de tu productividad</div></div>
+              <button className="btn btn-primary btn-sm" onClick={runAI} disabled={aiLoading}>{aiLoading?'Analizando...':'Ejecutar análisis'}</button>
+            </div>
+            {(aiResult||aiLoading)&&<>
+              <div style={{height:1,background:'var(--b1)',margin:'16px 0'}}/>
+              <div style={{fontSize:13,color:aiLoading?'var(--g1)':'var(--white)',lineHeight:1.8,fontStyle:aiLoading?'italic':'normal',animation:'fadeIn .3s'}}>{aiLoading?'Procesando tu información...':aiResult}</div>
+            </>}
+          </div>
+          <div className="card">
+            <div className="section-title">Resumen</div>
+            {[['⚡','XP Total',xp,'var(--gold)'],['✅','Tareas',`${doneT}/${tasks.length}`,'var(--acc)'],['🔄','Hábitos hoy',`${doneH}/${habits.length}`,'var(--mint)'],['🔥','Racha máx',Math.max(0,...habits.map(h=>h.streak))+' días','var(--gold)']].map(([ic,lb,v,c])=>(
+              <div key={lb} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid var(--b1)'}}>
+                <span style={{fontSize:18}}>{ic}</span>
+                <div style={{flex:1,fontSize:12,color:'var(--g1)'}}>{lb}</div>
+                <div style={{fontFamily:'Syne',fontSize:16,fontWeight:700,color:c}}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card" style={{marginBottom:20}}>
+          <div className="section-title">Actividad semanal</div>
+          <div style={{display:'flex',alignItems:'flex-end',gap:8,height:100}}>
+            {weekData.map((v,i)=>(
+              <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+                <div style={{width:'100%',borderRadius:6,background:i===6?'var(--b1)':'var(--acc)',opacity:i===6?.3:1,height:`${(v/10)*80}px`,transition:'height .4s ease'}}/>
+                <div style={{fontSize:10,color:'var(--g1)'}}>{DAYS[i]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card">
+          <div className="section-title">Tareas por área</div>
+          {['trabajo','personal','salud','educacion','finanzas','hogar','social'].map(a=>{
+            const count=tasks.filter(t=>t.category===a).length;
+            const done=tasks.filter(t=>t.category===a&&t.done).length;
+            if(!count)return null;
+            return(<div key={a} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',borderBottom:'1px solid var(--b1)'}}>
+              <div style={{fontSize:12,width:80,color:'var(--g1)',textTransform:'capitalize'}}>{a}</div>
+              <div style={{flex:1}}><div className="pbar-track" style={{height:4}}><div className="pbar-fill" style={{width:`${Math.round(done/count*100)}%`,background:'var(--acc)'}}/></div></div>
+              <div style={{fontSize:11,color:'var(--g1)',width:36,textAlign:'right'}}>{done}/{count}</div>
+            </div>);
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const TABS_MAP={dash:<Dashboard/>,tareas:<TasksTab/>,habitos:<HabitsTab/>,metas:<GoalsTab/>,proyectos:<ProjectsTab/>,enfoque:<FocusTab/>,pend:<PendingTab/>,recs:<RemindersTab/>,logros:<AchievementsTab/>,analisis:<AnalysisTab/>};
+  const PAGE_TITLES={dash:Tr.dash,tareas:Tr.tasks,habitos:Tr.habits,metas:Tr.goals,proyectos:Tr.projects,enfoque:Tr.focus,pend:Tr.pending,recs:Tr.reminders,logros:Tr.achievements,analisis:Tr.analysis};
+
+  return(
+    <div className="app">
+      {/* Sidebar */}
+      <div className={`sidebar${sidebarOpen?' expanded':''}`} onMouseEnter={()=>setSidebarOpen(true)} onMouseLeave={()=>setSidebarOpen(false)}>
+        <div className="sidebar-logo" onClick={()=>setTab('dash')}>K{sidebarOpen&&<span style={{marginLeft:4,fontSize:16}}>RONOS</span>}</div>
+        {NAV_ITEMS.map(item=>(
+          <div key={item.id} className={`nav-item${tab===item.id?' active':''}`} onClick={()=>setTab(item.id)}>
+            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-label">{navLabel(item.id)}</span>
+            {(item.id==='pend'&&pendCount>0)||(item.id==='recs'&&recCount>0)?<span style={{marginLeft:'auto',background:'var(--acc)',borderRadius:10,fontSize:9,padding:'1px 5px',fontWeight:700,minWidth:16,textAlign:'center'}}>{item.id==='pend'?pendCount:recCount}</span>:null}
+          </div>
+        ))}
+        <div className="sidebar-bottom">
+          <div className="nav-item" onClick={()=>{if(!notifOn)requestNotif();}}>
+            <span className="nav-icon">{notifOn?'🔔':'🔕'}</span>
+            <span className="nav-label">{notifOn?'Notif. activas':'Activar notif.'}</span>
+          </div>
+          <div className="nav-item" onClick={logout}>
+            <span className="nav-icon">👋</span>
+            <span className="nav-label">{Tr.logout}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main */}
+      <div className={`main${sidebarOpen?' shifted':''}`}>
+        <div className="topbar">
+          <div className="page-title">{PAGE_TITLES[tab]||tab}</div>
+          <div className="topbar-right">
+            <select className="lang-sel" value={lang} onChange={e=>changeLang(e.target.value)}>
+              <option value="es">🇲🇽 ES</option>
+              <option value="en">🇺🇸 EN</option>
+            </select>
+            <div className="xp-badge">⚡ {xp} XP</div>
+            <button className="notif-btn" onClick={()=>{if(!notifOn)requestNotif();else showToast('Notificaciones','Ya están activas 🔔','✅');}}>
+              🔔{!notifOn&&<span className="notif-dot"/>}
+            </button>
+            <div className="time-badge">
+              <div className="t">{now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</div>
+              <div className="d">{now.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'})}</div>
+            </div>
+            <div className="user-chip" onClick={logout} title={Tr.logout}>
+              <div className="avatar">{user.name[0].toUpperCase()}</div>
+              <div className="user-name">{user.name}</div>
+            </div>
+          </div>
+        </div>
+        <div className="content">
+          {TABS_MAP[tab]||<Dashboard/>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
